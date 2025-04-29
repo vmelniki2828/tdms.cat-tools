@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './TransactionsDashboard.css';
 
-const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, onPageSizeChange }) => {
+const FiltersSection = ({
+  filters,
+  onFilterChange,
+  onReset,
+  onApply,
+  pageSize,
+  onPageSizeChange,
+}) => {
   const [showFilters, setShowFilters] = useState(false);
   const [statusOptions, setStatusOptions] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
@@ -26,11 +33,11 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
   };
 
   // Функция для установки диапазона дат
-  const setDateRange = (range) => {
+  const setDateRange = range => {
     const today = new Date();
     let fromDate, toDate;
 
-    switch(range) {
+    switch (range) {
       case 'today':
         fromDate = today.toISOString().split('T')[0];
         toDate = today.toISOString().split('T')[0];
@@ -68,7 +75,8 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
 
   // Обновление количества активных фильтров
   useEffect(() => {
-    const count = Object.values(filters).filter(Boolean).length + (pageSize !== 10 ? 1 : 0);
+    const count =
+      Object.values(filters).filter(Boolean).length + (pageSize !== 10 ? 1 : 0);
     setActiveFiltersCount(count);
   }, [filters, pageSize]);
 
@@ -80,26 +88,42 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
   return (
     <div className="load-compare-section">
       <div className="load-compare-header">
-        <button 
+        <button
           onClick={() => setShowFilters(!showFilters)}
           className="load-compare-toggle"
         >
           <div className="load-compare-title-container">
             <div className="load-compare-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" className="load-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="load-icon"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
               </svg>
             </div>
             <span className="load-compare-title">Filters</span>
           </div>
-          <svg 
+          <svg
             className={`arrow-icon ${showFilters ? 'arrow-up' : ''}`}
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
       </div>
@@ -109,15 +133,28 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
           <div className="load-compare-section-title">
             <h2>Filter Transactions</h2>
             <button className="reset-button" onClick={onReset}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
               Reset Filters
             </button>
           </div>
 
           <div className="load-compare-section-description">
-            <p>Filter transactions by date range, transaction type, status, and other criteria.</p>
+            <p>
+              Filter transactions by date range, transaction type, status, and
+              other criteria.
+            </p>
           </div>
 
           <div className="filters-grid">
@@ -127,15 +164,22 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
               <div className="date-inputs">
                 <div className="date-input-group">
                   <label>From</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="ДД.ММ.ГГГГ"
-                    value={filters.fromDate ? filters.fromDate.split('-').reverse().join('.') : ''}
-                    onChange={(e) => {
+                    value={
+                      filters.fromDate
+                        ? filters.fromDate.split('-').reverse().join('.')
+                        : ''
+                    }
+                    onChange={e => {
                       // Преобразование формата ДД.ММ.ГГГГ в ГГГГ-ММ-ДД для API
                       const parts = e.target.value.split('.');
                       if (parts.length === 3) {
-                        onFilterChange('fromDate', `${parts[2]}-${parts[1]}-${parts[0]}`);
+                        onFilterChange(
+                          'fromDate',
+                          `${parts[2]}-${parts[1]}-${parts[0]}`
+                        );
                       } else {
                         onFilterChange('fromDate', e.target.value);
                       }
@@ -144,15 +188,22 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
                 </div>
                 <div className="date-input-group">
                   <label>To</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="ДД.ММ.ГГГГ"
-                    value={filters.toDate ? filters.toDate.split('-').reverse().join('.') : ''}
-                    onChange={(e) => {
+                    value={
+                      filters.toDate
+                        ? filters.toDate.split('-').reverse().join('.')
+                        : ''
+                    }
+                    onChange={e => {
                       // Преобразование формата ДД.ММ.ГГГГ в ГГГГ-ММ-ДД для API
                       const parts = e.target.value.split('.');
                       if (parts.length === 3) {
-                        onFilterChange('toDate', `${parts[2]}-${parts[1]}-${parts[0]}`);
+                        onFilterChange(
+                          'toDate',
+                          `${parts[2]}-${parts[1]}-${parts[0]}`
+                        );
                       } else {
                         onFilterChange('toDate', e.target.value);
                       }
@@ -161,11 +212,36 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
                 </div>
               </div>
               <div className="date-range-buttons">
-                <button className="date-range-button" onClick={() => setDateRange('today')}>Today</button>
-                <button className="date-range-button" onClick={() => setDateRange('yesterday')}>Yesterday</button>
-                <button className="date-range-button" onClick={() => setDateRange('last7days')}>Last 7 Days</button>
-                <button className="date-range-button" onClick={() => setDateRange('last30days')}>Last 30 Days</button>
-                <button className="date-range-button" onClick={() => setDateRange('thisMonth')}>This Month</button>
+                <button
+                  className="date-range-button"
+                  onClick={() => setDateRange('today')}
+                >
+                  Today
+                </button>
+                <button
+                  className="date-range-button"
+                  onClick={() => setDateRange('yesterday')}
+                >
+                  Yesterday
+                </button>
+                <button
+                  className="date-range-button"
+                  onClick={() => setDateRange('last7days')}
+                >
+                  Last 7 Days
+                </button>
+                <button
+                  className="date-range-button"
+                  onClick={() => setDateRange('last30days')}
+                >
+                  Last 30 Days
+                </button>
+                <button
+                  className="date-range-button"
+                  onClick={() => setDateRange('thisMonth')}
+                >
+                  This Month
+                </button>
               </div>
             </div>
 
@@ -173,9 +249,9 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
             <div className="filter-group">
               <label>Transaction Type</label>
               <div className="select-wrapper">
-                <select 
+                <select
                   value={filters.type}
-                  onChange={(e) => onFilterChange('type', e.target.value)}
+                  onChange={e => onFilterChange('type', e.target.value)}
                 >
                   <option value="">All Types</option>
                   <option value="deposit">Deposit</option>
@@ -185,9 +261,9 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
 
               <label>Comparison Type</label>
               <div className="select-wrapper">
-                <select 
+                <select
                   value={filters.compareType}
-                  onChange={(e) => onFilterChange('compareType', e.target.value)}
+                  onChange={e => onFilterChange('compareType', e.target.value)}
                 >
                   <option value="">All Comparisons</option>
                   <option value="full_match">Full Match</option>
@@ -202,9 +278,9 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
             <div className="filter-group">
               <label>Status</label>
               <div className="select-wrapper status-select">
-                <select 
+                <select
                   value={filters.status}
-                  onChange={(e) => onFilterChange('status', e.target.value)}
+                  onChange={e => onFilterChange('status', e.target.value)}
                 >
                   <option value="">All Statuses</option>
                   {statusOptions.map((status, index) => (
@@ -217,9 +293,9 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
 
               <label>Project</label>
               <div className="select-wrapper project-select">
-                <select 
+                <select
                   value={filters.project}
-                  onChange={(e) => onFilterChange('project', e.target.value)}
+                  onChange={e => onFilterChange('project', e.target.value)}
                 >
                   <option value="">All Projects</option>
                   {projectOptions.map((project, index) => (
@@ -235,9 +311,9 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
             <div className="filter-group">
               <label>Currency</label>
               <div className="select-wrapper currency-select">
-                <select 
+                <select
                   value={filters.currency}
-                  onChange={(e) => onFilterChange('currency', e.target.value)}
+                  onChange={e => onFilterChange('currency', e.target.value)}
                 >
                   <option value="">All Currencies</option>
                   {currencyOptions.map((currency, index) => (
@@ -249,10 +325,10 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
               </div>
 
               <label>Items per page</label>
-              <div className="select-wrapper items-per-page-select">
-                <select 
+              <div className="select-wrapper currency-select">
+                <select
                   value={pageSize}
-                  onChange={(e) => onPageSizeChange(e.target.value)}
+                  onChange={e => onPageSizeChange(e.target.value)}
                 >
                   <option value="10">10 items per page</option>
                   <option value="25">25 items per page</option>
@@ -264,12 +340,20 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
           </div>
 
           <div className="load-compare-submit">
-            <button 
-              onClick={onApply}
-              className="load-data-button"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="button-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            <button onClick={onApply} className="load-data-button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="button-icon"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
               </svg>
               Apply Filters
             </button>
@@ -280,4 +364,4 @@ const FiltersSection = ({ filters, onFilterChange, onReset, onApply, pageSize, o
   );
 };
 
-export default FiltersSection; 
+export default FiltersSection;

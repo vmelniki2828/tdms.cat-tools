@@ -1,71 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import './Login.css';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Фокус на поле username при загрузке
-    document.getElementById('username')?.focus();
-  }, []);
-
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!username || !password) {
-      setError('Пожалуйста, введите имя пользователя и пароль');
-      return;
-    }
-
-    setIsLoading(true);
     setError('');
+    setLoading(true);
 
     try {
-      const response = await fetch(
-        'https://tdms.cat-tools.com/api/v1/users/login',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ username, password }),
-        }
-      );
+      const response = await fetch('/api/v1/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include',
+      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Перенаправляем на дашборд
-        navigate('/dashboard');
+      if (response.ok) {
+        // Просто переходим на /dashboard
+        window.location.href = '/dashboard';
       } else {
-        setError(data.error || 'Ошибка авторизации');
+        const data = await response.json();
+        setError(data.message || 'Login failed. Please try again.');
       }
     } catch (error) {
-      setError(
-        'Произошла непредвиденная ошибка. Пожалуйста, попробуйте снова.'
-      );
+      setError('An error occurred. Please try again.');
       console.error('Login error:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <>
       <div className='login-header_top'>
-        <h1 class="text-3xl font-bold mb-2">Transaction Collector</h1>
-        <p class="text-gray-100">Sign in to access your dashboard</p>
+        <h1 className="text-3xl font-bold mb-2">Transaction Collector</h1>
+        <p className="text-gray-100">Sign in to access your dashboard</p>
       </div>
       <div className="login-container">
         <div className="login-card">
@@ -102,7 +79,7 @@ const Login = () => {
                   type="text"
                   id="username"
                   value={username}
-                  onChange={e => setUsername(e.target.value)}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="input-field"
                   placeholder="Enter your username"
                   required
@@ -117,15 +94,15 @@ const Login = () => {
                   type="password"
                   id="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="input-field"
                   placeholder="Enter your password"
                   required
                 />
               </div>
 
-              <button type="submit" className="submit-btn" disabled={isLoading}>
-                {isLoading ? (
+              <button type="submit" className="submit-btn" disabled={loading}>
+                {loading ? (
                   <>
                     <svg
                       className="loading-spinner"

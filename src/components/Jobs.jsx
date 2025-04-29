@@ -8,7 +8,6 @@ const Jobs = () => {
   const [error, setError] = useState(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     loadJobs();
@@ -52,11 +51,7 @@ const Jobs = () => {
     setSelectedJob(null);
   };
 
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
-
-  const confirmLogout = async () => {
+  const handleLogout = async () => {
     try {
       const response = await fetch('/api/v1/users/logout', {
         method: 'POST',
@@ -145,7 +140,7 @@ const Jobs = () => {
                     strokeWidth="2"
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
-              </svg>
+                </svg>
                 <span>Logout</span>
               </button>
             </div>
@@ -203,7 +198,7 @@ const Jobs = () => {
       </div>
 
       {/* Jobs List */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+        <div className="jobs-table-container bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
           <h2 className="text-xl font-semibold text-gray-800">Recent Jobs</h2>
           <button 

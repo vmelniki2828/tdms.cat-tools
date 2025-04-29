@@ -1,10 +1,29 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'react-feather';
 import './Jobs.css';
 
 const JobDetailsModal = ({ job, onClose, calculateProgress }) => {
+  const navigate = useNavigate();
+
+  const handleViewTransactions = () => {
+    // Переходим на страницу транзакций и передаем данные фильтров через состояние
+    navigate('/dashboard', {
+      state: {
+        filters: {
+          fromDate: job.data.from_date,
+          toDate: job.data.to_date,
+          jobId: job.id,
+          payments: job.data.payments
+        }
+      }
+    });
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="job-details-modal">
+      <div className="job-details-modal no-scroll-modal">
         <div className="job-details-header">
           <h3>Job Details</h3>
           <button onClick={onClose} className="close-button">
@@ -111,10 +130,9 @@ const JobDetailsModal = ({ job, onClose, calculateProgress }) => {
 
                   <div className="job-section">
                     <h4 className="job-info-label">Payment Processors</h4>
-                    
                     {Object.entries(job.data.progress.payments || {}).map(([payment, status]) => (
-                      <div key={payment} className="payment-processor-item">
-                        <div className="payment-processor-header">
+                      <div key={payment} className="payment-processor-card">
+                        <div className="payment-processor-row">
                           <div className="payment-processor-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
@@ -122,24 +140,38 @@ const JobDetailsModal = ({ job, onClose, calculateProgress }) => {
                             </svg>
                           </div>
                           <div className="payment-processor-name">{payment}</div>
-                          <div className={`payment-processor-status ${status.processed ? 'status-processed' : status.ready ? 'status-ready' : 'status-pending'}`}>
+                          <div className={`payment-processor-status status-${status.processed ? 'processed' : status.ready ? 'ready' : 'pending'}`}
+                               style={{ marginLeft: 'auto' }}>
                             {status.processed ? 'Processed' : status.ready ? 'Ready' : 'Pending'}
                           </div>
                         </div>
-                        
-                        <div className="payment-processor-steps">
-                          <div className="processor-step">
-                            <span>Data Loading</span>
-                            {status.ready && <span className="check-icon">✓</span>}
+                        <div className="payment-processor-progress-bar-container">
+                          <div className="payment-processor-progress-bar">
+                            <div className="payment-processor-progress-bar-value" style={{ width: status.processed ? '100%' : status.ready ? '50%' : '0%' }}></div>
                           </div>
-                          <div className="processor-step">
-                            <span>Processing</span>
-                            {status.processed && <span className="check-icon">✓</span>}
+                          <div className="payment-processor-progress-labels">
+                            <span>Data Loading {status.ready && <span className="check-icon">✓</span>}</span>
+                            <span style={{ marginLeft: 'auto' }}>Processing {status.processed && <span className="check-icon">✓</span>}</span>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
+
+                  {job.status === 'completed' && (
+                    <div className="job-success-block">
+                      <div className="job-success-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" stroke="green" strokeWidth="2" fill="#eafff3" />
+                          <path d="M9 12l2 2l4-4" stroke="green" strokeWidth="2" fill="none" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="job-success-title">Job Completed Successfully</div>
+                        <div className="job-success-message">Transaction data has been loaded and processed successfully.</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -161,6 +193,17 @@ const JobDetailsModal = ({ job, onClose, calculateProgress }) => {
             </>
           )}
         </div>
+        {job.status === 'completed' && (
+          <div className="modal-footer">
+            <button 
+              className="view-transactions-button"
+              onClick={handleViewTransactions}
+            >
+              View Transactions
+              <ArrowRight className="button-icon" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

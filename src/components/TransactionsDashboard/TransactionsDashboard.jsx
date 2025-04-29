@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import './TransactionsDashboard.css';
 import StatsCards from './StatsCards';
 import TransactionsTable from './TransactionsTable';
@@ -6,9 +7,9 @@ import Pagination from './Pagination';
 import FiltersSection from './FiltersSection';
 import LoadCompareSection from './LoadCompareSection';
 import ExternalIdModal from './ExternalIdModal';
-import LogoutModal from './LogoutModal';
 
 const TransactionsDashboard = () => {
+  const location = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -17,7 +18,6 @@ const TransactionsDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showExternalIdModal, setShowExternalIdModal] = useState(false);
   const [currentExternalId, setCurrentExternalId] = useState('');
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [stats, setStats] = useState({
     totalTransactions: '-',
     successfulTransactions: '-',
@@ -37,6 +37,15 @@ const TransactionsDashboard = () => {
     currency: '',
     compareType: '',
   });
+
+  // Применяем фильтры из состояния при переходе на страницу
+  useEffect(() => {
+    if (location.state?.filters) {
+      setFilters(location.state.filters);
+      // Сбрасываем состояние в location, чтобы фильтры не применялись повторно при обновлении страницы
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     console.log(stats);
@@ -184,11 +193,7 @@ const TransactionsDashboard = () => {
   };
 
   // Функция для выхода из системы
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
-
-  const confirmLogout = async () => {
+  const handleLogout = async () => {
     try {
       const response = await fetch('/api/v1/users/logout', {
         method: 'POST',
@@ -301,12 +306,6 @@ const TransactionsDashboard = () => {
           isOpen={showExternalIdModal}
           externalId={currentExternalId}
           onClose={handleCloseExternalIdModal}
-        />
-
-        <LogoutModal
-          isOpen={showLogoutModal}
-          onClose={() => setShowLogoutModal(false)}
-          onConfirm={confirmLogout}
         />
       </div>
     </div>
