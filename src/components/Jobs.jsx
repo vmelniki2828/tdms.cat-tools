@@ -83,7 +83,7 @@ const Jobs = () => {
       const paymentCount = Object.keys(progress.payments).length;
       totalSteps += paymentCount * 2;
       
-      for (const [_, status] of Object.entries(progress.payments)) {
+      for (const [, status] of Object.entries(progress.payments)) {
         if (status.ready) completedSteps++;
         if (status.processed) completedSteps++;
       }

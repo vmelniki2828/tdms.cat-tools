@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 
 const ExternalIdModal = ({ isOpen, externalId, onClose }) => {
   const modalRef = useRef(null);
@@ -13,11 +13,11 @@ const ExternalIdModal = ({ isOpen, externalId, onClose }) => {
       });
   };
 
-  const handleOutsideClick = (event) => {
+  const handleOutsideClick = useCallback((event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
       onClose();
     }
-  };
+  }, [onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -26,7 +26,7 @@ const ExternalIdModal = ({ isOpen, externalId, onClose }) => {
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleOutsideClick]);
 
   if (!isOpen) return null;
 

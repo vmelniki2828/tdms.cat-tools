@@ -193,17 +193,15 @@ const JobDetailsModal = ({ job, onClose, calculateProgress }) => {
             </>
           )}
         </div>
-        {job.status === 'completed' && (
-          <div className="modal-footer">
-            <button 
-              className="view-transactions-button"
-              onClick={handleViewTransactions}
-            >
-              View Transactions
-              <ArrowRight className="button-icon" />
-            </button>
-          </div>
-        )}
+        <div className="job-details-footer">
+          <button 
+            className="view-transactions-button"
+            onClick={handleViewTransactions}
+          >
+            View Transactions
+            <ArrowRight className="button-icon" />
+          </button>
+        </div>
       </div>
     </div>
   );

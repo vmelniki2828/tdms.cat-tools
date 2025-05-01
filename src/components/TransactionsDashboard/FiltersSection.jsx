@@ -13,7 +13,6 @@ const FiltersSection = ({
   const [statusOptions, setStatusOptions] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
   const [currencyOptions, setCurrencyOptions] = useState([]);
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   // Загрузка опций для фильтров
   const loadFilterOptions = async () => {
@@ -72,13 +71,6 @@ const FiltersSection = ({
     onFilterChange('fromDate', fromDate);
     onFilterChange('toDate', toDate);
   };
-
-  // Обновление количества активных фильтров
-  useEffect(() => {
-    const count =
-      Object.values(filters).filter(Boolean).length + (pageSize !== 10 ? 1 : 0);
-    setActiveFiltersCount(count);
-  }, [filters, pageSize]);
 
   // Загрузка опций фильтров при монтировании компонента
   useEffect(() => {
@@ -325,7 +317,7 @@ const FiltersSection = ({
               </div>
 
               <label>Items per page</label>
-              <div className="select-wrapper currency-select">
+              <div className="select-wrapper items-per-page-select">
                 <select
                   value={pageSize}
                   onChange={e => onPageSizeChange(e.target.value)}

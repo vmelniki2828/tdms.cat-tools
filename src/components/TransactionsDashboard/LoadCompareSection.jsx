@@ -9,6 +9,7 @@ const LoadCompareSection = () => {
   const [selectedPayments, setSelectedPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Загрузка доступных платежных систем
   const loadPaymentProcessors = async () => {
@@ -82,38 +83,44 @@ const LoadCompareSection = () => {
 
   // Отправка запроса на загрузку и сравнение транзакций
   const submitLoadAndCompare = async () => {
+    // Проверяем форму перед показом модального окна
+    if (!fromDate || !toDate) {
+      setError('Please select both from and to dates');
+      return;
+    }
+    
+    if (selectedPayments.length === 0) {
+      setError('Please select at least one payment processor');
+      return;
+    }
+    
+    // Проверка диапазона дат
+    const fromDateObj = new Date(fromDate);
+    const toDateObj = new Date(toDate);
+    const diffTime = Math.abs(toDateObj - fromDateObj);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 30) {
+      setError('Date range cannot exceed 30 days');
+      return;
+    }
+    
+    if (fromDateObj > toDateObj) {
+      setError('From date must be before to date');
+      return;
+    }
+
+    // Показываем модальное окно подтверждения
+    setShowConfirmModal(true);
+  };
+
+  // Функция подтверждения и отправки
+  const confirmAndSubmit = async () => {
     try {
       setError('');
-      
-      // Валидация формы
-      if (!fromDate || !toDate) {
-        setError('Please select both from and to dates');
-        return;
-      }
-      
-      if (selectedPayments.length === 0) {
-        setError('Please select at least one payment processor');
-        return;
-      }
-      
-      // Проверка диапазона дат
-      const fromDateObj = new Date(fromDate);
-      const toDateObj = new Date(toDate);
-      const diffTime = Math.abs(toDateObj - fromDateObj);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays > 30) {
-        setError('Date range cannot exceed 30 days');
-        return;
-      }
-      
-      if (fromDateObj > toDateObj) {
-        setError('From date must be before to date');
-        return;
-      }
-      
-      // Отправка запроса
       setIsLoading(true);
+      setShowConfirmModal(false);
+      
       const response = await fetch('/api/v1/transactions/load-and-compare', {
         method: 'POST',
         headers: {
@@ -270,6 +277,41 @@ const LoadCompareSection = () => {
                     Start Loading Historical Data
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно подтверждения */}
+      {showConfirmModal && (
+        <div className="modal-overlay">
+          <div className="confirm-modal">
+            <div className="confirm-modal-header">
+              <h3>Подтверждение действия</h3>
+              <button 
+                className="modal-close-btn" 
+                onClick={() => setShowConfirmModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="confirm-modal-content">
+              <p>Вы уверены, что хотите начать загрузку исторических данных?</p>
+              <p className="confirm-modal-warning">Этот процесс может занять некоторое время и не может быть остановлен после запуска.</p>
+            </div>
+            <div className="confirm-modal-footer">
+              <button 
+                className="cancel-button" 
+                onClick={() => setShowConfirmModal(false)}
+              >
+                Отмена
+              </button>
+              <button 
+                className="confirm-button" 
+                onClick={confirmAndSubmit}
+              >
+                Подтвердить
               </button>
             </div>
           </div>

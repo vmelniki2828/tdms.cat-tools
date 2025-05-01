@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import './TransactionsDashboard.css';
 import StatsCards from './StatsCards';
@@ -38,22 +38,8 @@ const TransactionsDashboard = () => {
     compareType: '',
   });
 
-  // Применяем фильтры из состояния при переходе на страницу
-  useEffect(() => {
-    if (location.state?.filters) {
-      setFilters(location.state.filters);
-      // Сбрасываем состояние в location, чтобы фильтры не применялись повторно при обновлении страницы
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
-
-  useEffect(() => {
-    console.log(stats);
-  }, [stats]);
-
-  // Функция для загрузки данных фильтров с API
-  // Загрузка транзакций
-  const loadTransactions = async () => {
+  // Функция для загрузки транзакций, обернутая в useCallback
+  const loadTransactions = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -137,7 +123,20 @@ const TransactionsDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, pageSize, filters]);
+
+  // Применяем фильтры из состояния при переходе на страницу
+  useEffect(() => {
+    if (location.state?.filters) {
+      setFilters(location.state.filters);
+      // Сбрасываем состояние в location, чтобы фильтры не применялись повторно при обновлении страницы
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    console.log(stats);
+  }, [stats]);
 
   // Функция для обработки изменения фильтров
   const handleFilterChange = (name, value) => {
@@ -217,56 +216,47 @@ const TransactionsDashboard = () => {
   // Загрузка транзакций при первом рендере и изменении страницы/фильтров
   useEffect(() => {
     loadTransactions();
-  }, [currentPage, pageSize, filters]);
-
-  useEffect(() => {
-    console.log(stats);
-  }, [stats]);
+  }, [loadTransactions]);
 
   return (
     <div className="page-container">
       {/* Dashboard Header */}
       <div className="dashboard-header">
-        <div className="container">
-          <div className="dashboard-header-content">
-            <div>
-              <h1 className="dashboard-title">Transactions Dashboard</h1>
-              <p className="dashboard-subtitle">
-                Monitor and analyze your transaction data
-              </p>
-            </div>
-            <div className="nav-container">
-              <a href="/" className="nav-link active">
-                Transactions
-              </a>
-              <a href="/jobs" className="nav-link">
-                Jobs
-              </a>
-              <button onClick={handleLogout} className="logout-button">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                <span>Logout</span>
-              </button>
-            </div>
+        <div className="dashboard-header-content">
+          <div className="dashboard-title-container">
+            <h1 className="dashboard-title">Transactions Dashboard</h1>
+            <p className="dashboard-subtitle">
+              Monitor and analyze your transaction data
+            </p>
+          </div>
+          <div className="nav-container">
+            <a href="/" className="nav-link active">
+              Transactions
+            </a>
+            <a href="/jobs" className="nav-link">
+              Jobs
+            </a>
+            <button onClick={handleLogout} className="logout-button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </div>
 
       <div className="container main-content">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">
-          Transactions Dashboard
-        </h1>
         {/* Filters Section */}
         <FiltersSection
           filters={filters}

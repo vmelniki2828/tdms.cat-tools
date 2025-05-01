@@ -5,7 +5,6 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
-import BaseLayout from './components/BaseLayout';
 import Login from './components/Login';
 
 import Jobs from './components/Jobs';
