@@ -10,7 +10,7 @@ module.exports = function(app) {
       cookieDomainRewrite: 'localhost',
       onProxyRes: function(proxyRes, req, res) {
         // Изменяем CORS заголовки
-        proxyRes.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000';
+        proxyRes.headers['Access-Control-Allow-Origin'] = 'https://gilded-chebakia-8cb622.netlify.app';
         proxyRes.headers['Access-Control-Allow-Credentials'] = true;
         
         // Логирование для отладки
