@@ -13,7 +13,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('https://tdms.cat-tools.com/api/v1/users/login', {
+      const response = await fetch('/api/v1/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
