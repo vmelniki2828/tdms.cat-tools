@@ -93,17 +93,19 @@ const Pagination = ({ currentPage, totalPages, pageSize, totalItems, onPageChang
       <div className="pagination-info">
         <div className="items-per-page">
           <span className="items-per-page-text">Items per page:</span>
-          <select 
-            id="pageSize" 
-            onChange={handlePageSizeChange} 
-            value={pageSize}
-            className="items-per-page-select"
-          >
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
+          <div className="select-wrapper">
+            <select 
+              id="pageSize" 
+              onChange={handlePageSizeChange} 
+              value={pageSize}
+            >
+              <option value="100">100</option>
+              <option value="200">200</option>
+              <option value="300">300</option>
+              <option value="400">400</option>
+              <option value="500">500</option>
+            </select>
+          </div>
         </div>
         <div className="items-info">
           Showing {startItem} to {endItem} of {totalItems} items

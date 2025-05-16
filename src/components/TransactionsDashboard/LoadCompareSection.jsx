@@ -73,11 +73,12 @@ const LoadCompareSection = () => {
   // Обработка изменения выбранных платежных систем
   const handlePaymentChange = (e) => {
     const { value, checked } = e.target;
+    const paymentId = e.target.getAttribute('data-id');
     
     if (checked) {
-      setSelectedPayments([...selectedPayments, value]);
+      setSelectedPayments([...selectedPayments, paymentId]);
     } else {
-      setSelectedPayments(selectedPayments.filter(payment => payment !== value));
+      setSelectedPayments(selectedPayments.filter(id => id !== paymentId));
     }
   };
 
@@ -150,10 +151,22 @@ const LoadCompareSection = () => {
     }
   };
 
+  // Выбрать/отменить выбор всех платежных систем
+  const toggleAllPayments = () => {
+    if (selectedPayments.length === paymentProcessors.length) {
+      setSelectedPayments([]);
+    } else {
+      setSelectedPayments(paymentProcessors.map(payment => payment.id));
+    }
+  };
+
   // Загрузка платежных систем при монтировании компонента
   useEffect(() => {
     loadPaymentProcessors();
   }, []);
+
+  // Проверка валидности формы
+  const isFormValid = fromDate && toDate && selectedPayments.length > 0;
 
   return (
     <div className="load-compare-section">
@@ -193,7 +206,14 @@ const LoadCompareSection = () => {
             <div className="load-compare-form-row">
               {/* Date Range */}
               <div className="load-compare-date-range">
-                <label>Date Range (Max 30 days)</label>
+                <label className="section-label">Date Range <span className="hint-text">(Max 30 days)</span></label>
+                
+                <div className="date-range-buttons">
+                  <button type="button" onClick={() => setLoadDateRange('today')} className="date-range-button">Today</button>
+                  <button type="button" onClick={() => setLoadDateRange('yesterday')} className="date-range-button">Yesterday</button>
+                  <button type="button" onClick={() => setLoadDateRange('last7days')} className="date-range-button">Last 7 Days</button>
+                </div>
+                
                 <div className="date-inputs">
                   <div className="date-input-group">
                     <label>From Date</label>
@@ -202,6 +222,7 @@ const LoadCompareSection = () => {
                       value={fromDate}
                       onChange={(e) => setFromDate(e.target.value)}
                       required 
+                      className="date-input"
                     />
                   </div>
                   <div className="date-input-group">
@@ -211,20 +232,27 @@ const LoadCompareSection = () => {
                       value={toDate}
                       onChange={(e) => setToDate(e.target.value)}
                       required 
+                      className="date-input"
                     />
                   </div>
-                </div>
-                <div className="date-range-buttons">
-                  <button type="button" onClick={() => setLoadDateRange('today')} className="date-range-button">Today</button>
-                  <button type="button" onClick={() => setLoadDateRange('yesterday')} className="date-range-button">Yesterday</button>
-                  <button type="button" onClick={() => setLoadDateRange('last7days')} className="date-range-button">Last 7 Days</button>
-                  <button type="button" onClick={() => setLoadDateRange('thisMonth')} className="date-range-button">This Month</button>
                 </div>
               </div>
 
               {/* Payment Processors */}
               <div className="load-compare-payment-processors">
-                <label>Payment Processors</label>
+                <div className="payment-header">
+                  <label className="section-label">Payment Processors</label>
+                  {paymentProcessors.length > 0 && (
+                    <button 
+                      type="button" 
+                      onClick={toggleAllPayments} 
+                      className="select-all-button"
+                    >
+                      {selectedPayments.length === paymentProcessors.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  )}
+                </div>
+                
                 {isLoading ? (
                   <div className="payment-processors-loading">
                     <div className="loading-placeholder"></div>
@@ -236,30 +264,43 @@ const LoadCompareSection = () => {
                     {paymentProcessors.length === 0 ? (
                       <div className="no-processors">No payment processors available for historical data.</div>
                     ) : (
-                      paymentProcessors.map((payment, index) => (
-                        <div key={index} className="payment-processor-item">
-                          <input
-                            type="checkbox" 
-                            id={`payment_${payment.name}`}
-                            value={payment.name}
-                            checked={selectedPayments.includes(payment.name)}
-                            onChange={handlePaymentChange}
-                          />
-                          <label htmlFor={`payment_${payment.name}`}>{payment.name}</label>
-                        </div>
-                      ))
+                      <div className="payment-grid">
+                        {paymentProcessors.map((payment, index) => (
+                          <div key={index} className="payment-processor-item">
+                            <input
+                              type="checkbox" 
+                              id={`payment_${payment.name}`}
+                              value={payment.name}
+                              checked={selectedPayments.includes(payment.id)}
+                              onChange={handlePaymentChange}
+                              data-id={payment.id}
+                            />
+                            <label htmlFor={`payment_${payment.name}`}>{payment.name}</label>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 )}
-                {error && <div className="error-message">{error}</div>}
               </div>
             </div>
+
+            {error && (
+              <div className="error-container">
+                <div className="error-message">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {error}
+                </div>
+              </div>
+            )}
 
             <div className="load-compare-submit">
               <button 
                 onClick={submitLoadAndCompare}
-                disabled={isLoading}
-                className="load-data-button"
+                disabled={isLoading || !isFormValid}
+                className={`load-data-button ${isFormValid ? 'button-enabled' : 'button-disabled'}`}
               >
                 {isLoading ? (
                   <>
@@ -298,7 +339,12 @@ const LoadCompareSection = () => {
             </div>
             <div className="confirm-modal-content">
               <p>Вы уверены, что хотите начать загрузку исторических данных?</p>
-              <p className="confirm-modal-warning">Этот процесс может занять некоторое время и не может быть остановлен после запуска.</p>
+              <div className="confirm-modal-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" className="warning-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Этот процесс может занять некоторое время и не может быть остановлен после запуска.</span>
+              </div>
             </div>
             <div className="confirm-modal-footer">
               <button 

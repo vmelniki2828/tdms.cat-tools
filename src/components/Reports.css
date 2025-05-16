@@ -1,0 +1,478 @@
+/* Стили для компонента Reports */
+
+.reports-card-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.reports-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.reports-icon {
+  background-color: #eef2ff;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.reports-icon svg {
+  width: 16px;
+  height: 16px;
+  color: #6366f1;
+}
+
+.reports-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.reports-content {
+  padding: 20px;
+}
+
+/* Стили для карточек отчетов */
+.reports-cards-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.report-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+.report-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.report-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
+
+.report-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.report-status.completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.report-status.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.report-status.failed {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.report-card-details {
+  margin-bottom: 16px;
+}
+
+.report-date, .report-format {
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.report-detail-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.report-card-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.report-action-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.details-button {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.delete-button {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.report-action-button.download-button {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+}
+
+.report-action-button .download-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+/* Стили для пустого состояния */
+.empty-reports-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.report-icon {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 16px;
+  color: #9ca3af;
+}
+
+.report-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.empty-state-text {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.empty-state-text h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.empty-state-text p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.generate-report-button {
+  background-color: #6366f1;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.generate-report-button:hover {
+  background-color: #4f46e5;
+}
+
+/* Стили для пагинации */
+.reports-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination-button {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+  min-width: 80px;
+  text-align: center;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Стили для отладочной панели */
+.debug-panel {
+  margin-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+}
+
+.debug-panel summary {
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.debug-panel pre {
+  background-color: #f9fafb;
+  padding: 12px;
+  border-radius: 6px;
+  overflow: auto;
+  font-size: 12px;
+  max-height: 300px;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+/* Стили для модального окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.report-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.close-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+}
+
+.radio-option input {
+  margin-right: 10px;
+}
+
+.radio-option label {
+  font-size: 14px;
+  color: #374151;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+  gap: 12px;
+}
+
+.cancel-button {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.submit-button {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Отзывчивый дизайн */
+@media (min-width: 768px) {
+  .reports-cards-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .reports-cards-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Адаптивная верстка */
+@media (max-width: 640px) {
+  .empty-state {
+    padding: 32px 16px;
+  }
+  
+  .empty-icon-container {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .empty-title {
+    font-size: 18px;
+  }
+  
+  .empty-description {
+    font-size: 14px;
+  }
+  
+  .pagination-container {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .pagination-info {
+    margin-top: 8px;
+  }
+}
+
+/* Стили для таблицы отчетов */
+.reports-list {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reports-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reports-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reports-table tr:hover {
+  background-color: #f9fafb;
+}
+
+.download-button {
+  background: none;
+  border: none;
+  color: #6366f1;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.download-button:hover {
+  background-color: #eef2ff;
+}
+
+.download-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Состояния загрузки и ошибки */
+.loading-state, .error-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #6b7280;
+} 

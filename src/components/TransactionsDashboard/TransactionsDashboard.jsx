@@ -12,7 +12,7 @@ const TransactionsDashboard = () => {
   const location = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(100);
   const [transactions, setTransactions] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +27,11 @@ const TransactionsDashboard = () => {
     successTrend: '0%',
     pendingTrend: '0%',
     failedTrend: '0%',
+    successfulPercentage: 0,
+    currencyAmounts: {},
   });
+  
+  // Активные фильтры, которые используются в запросе
   const [filters, setFilters] = useState({
     fromDate: '',
     toDate: '',
@@ -36,7 +40,28 @@ const TransactionsDashboard = () => {
     project: '',
     currency: '',
     compareType: '',
+    mismatchStatus: '',
+    mismatch_confirmed: null,
+    paymentProcessors: [],
+    paymentProcessorIds: [],
   });
+  
+  // Временные фильтры для работы с формой фильтров
+  const [tempFilters, setTempFilters] = useState({
+    fromDate: '',
+    toDate: '',
+    type: '',
+    status: '',
+    project: '',
+    currency: '',
+    compareType: '',
+    mismatchStatus: '',
+    mismatch_confirmed: null,
+    paymentProcessors: [],
+    paymentProcessorIds: [],
+  });
+  
+  const [paymentProcessors, setPaymentProcessors] = useState([]);
 
   // Функция для загрузки транзакций, обернутая в useCallback
   const loadTransactions = useCallback(async () => {
@@ -58,6 +83,12 @@ const TransactionsDashboard = () => {
       if (filters.currency) params.append('currency', filters.currency);
       if (filters.compareType)
         params.append('compare_type', filters.compareType);
+      if (filters.mismatch_confirmed !== null && filters.mismatch_confirmed !== undefined)
+        params.append('mismatch_confirmed', filters.mismatch_confirmed);
+      if (filters.paymentProcessorIds && filters.paymentProcessorIds.length > 0)
+        filters.paymentProcessorIds.forEach(processorId => {
+          params.append('payment_ids', processorId);
+        });
 
       const response = await fetch(`/api/v1/transactions/?${params}`, {
         method: 'GET',
@@ -94,21 +125,80 @@ const TransactionsDashboard = () => {
       setTotalPages(Math.ceil(data.total / pageSize));
       
       // Обновление статистики
-      const totalTransactions = data.total || 0;
-      const successfulTransactions = data.transactions.filter(t => t.status === 'completed').length || 0;
-      const pendingTransactions = data.transactions.filter(t => t.status === 'pending').length || 0;
+      const totalTransactionsOnPage = data.transactions.length || 0;
+      
+      // Проверяем, есть ли транзакции на странице
+      if (totalTransactionsOnPage === 0) {
+        console.log('На текущей странице нет транзакций');
+        
+        // Устанавливаем нулевую статистику для текущей страницы
+        const updatedStats = {
+          totalTransactions: data.total.toString(),
+          successfulTransactions: '0',
+          pendingTransactions: '0',
+          failedTransactions: '0',
+          transactionsTrend: data.stats?.total_trend || '0%',
+          successTrend: data.stats?.success_trend || '0%',
+          pendingTrend: data.stats?.pending_trend || '0%',
+          failedTrend: data.stats?.failed_trend || '0%',
+          successfulPercentage: 0,
+          currencyAmounts: {}
+        };
+        
+        setStats(updatedStats);
+        setIsLoading(false);
+        return;
+      }
+      
+      const successfulTransactions = data.transactions.filter(t => 
+        t.fundist_transaction && t.payment_transaction
+      ).length || 0;
+      const pendingTransactions = data.transactions.filter(t => 
+        !t.fundist_transaction || !t.payment_transaction
+      ).length || 0;
       const failedTransactions = data.transactions.filter(t => t.status === 'failed').length || 0;
       
+      // Рассчитываем процент успешных транзакций на текущей странице
+      const successfulPercentage = totalTransactionsOnPage > 0 
+        ? Math.round((successfulTransactions / totalTransactionsOnPage) * 100)
+        : 0;
+      
+      console.log('Вычисление процента успешных транзакций:');
+      console.log(`Успешных: ${successfulTransactions}, Всего на странице: ${totalTransactionsOnPage}`);
+      console.log(`Формула: Math.round((${successfulTransactions} / ${totalTransactionsOnPage}) * 100) = ${successfulPercentage}%`);
+      
+      // Рассчитываем суммы по валютам из fundist_transaction
+      const currencyAmounts = {};
+      data.transactions.forEach(transaction => {
+        if (transaction.fundist_transaction && 
+            transaction.fundist_transaction.amount && 
+            transaction.fundist_transaction.currency) {
+          
+          const amount = parseFloat(transaction.fundist_transaction.amount);
+          const currency = transaction.fundist_transaction.currency.toLowerCase();
+          
+          if (!isNaN(amount)) {
+            if (currencyAmounts[currency]) {
+              currencyAmounts[currency] += amount;
+            } else {
+              currencyAmounts[currency] = amount;
+            }
+          }
+        }
+      });
+      
       console.log('Рассчитанная статистика:', {
-        total: totalTransactions,
+        total: totalTransactionsOnPage,
         successful: successfulTransactions,
         pending: pendingTransactions,
-        failed: failedTransactions
+        failed: failedTransactions,
+        successPercent: successfulPercentage,
+        currencyAmounts: currencyAmounts
       });
       
       // Устанавливаем статистику вручную из расчетных значений
-      setStats({
-        totalTransactions: totalTransactions.toString(),
+      const updatedStats = {
+        totalTransactions: data.total.toString(),
         successfulTransactions: successfulTransactions.toString(),
         pendingTransactions: pendingTransactions.toString(),
         failedTransactions: failedTransactions.toString(),
@@ -116,7 +206,12 @@ const TransactionsDashboard = () => {
         successTrend: data.stats?.success_trend || '0%',
         pendingTrend: data.stats?.pending_trend || '0%',
         failedTrend: data.stats?.failed_trend || '0%',
-      });
+        successfulPercentage: successfulPercentage,
+        currencyAmounts: currencyAmounts
+      };
+      
+      console.log('Обновляем статистику с новым значением successfulPercentage:', updatedStats.successfulPercentage);
+      setStats(updatedStats);
       
     } catch (error) {
       console.error('Error loading transactions:', error);
@@ -128,7 +223,9 @@ const TransactionsDashboard = () => {
   // Применяем фильтры из состояния при переходе на страницу
   useEffect(() => {
     if (location.state?.filters) {
-      setFilters(location.state.filters);
+      const newFilters = location.state.filters;
+      setFilters(newFilters);
+      setTempFilters(newFilters);
       // Сбрасываем состояние в location, чтобы фильтры не применялись повторно при обновлении страницы
       window.history.replaceState({}, document.title);
     }
@@ -138,15 +235,47 @@ const TransactionsDashboard = () => {
     console.log(stats);
   }, [stats]);
 
-  // Функция для обработки изменения фильтров
+  // Функция для обработки изменения временных фильтров
   const handleFilterChange = (name, value) => {
-    setFilters(prev => ({ ...prev, [name]: value }));
-    setCurrentPage(1); // Сброс на первую страницу при изменении фильтров
+    // Специальная логика для поля mismatchStatus
+    if (name === 'mismatchStatus') {
+      // Если значение пустое, то сбрасываем и related mismatch_confirmed
+      if (value === '') {
+        setTempFilters(prev => ({ 
+          ...prev, 
+          mismatchStatus: value,
+          mismatch_confirmed: null 
+        }));
+      } else {
+        // Иначе устанавливаем соответствующее значение mismatch_confirmed
+        const mismatch_confirmed = value === 'confirmed' ? true : 
+                                  value === 'unconfirmed' ? false : null;
+        
+        setTempFilters(prev => ({ 
+          ...prev, 
+          mismatchStatus: value,
+          mismatch_confirmed: mismatch_confirmed 
+        }));
+      }
+    } else {
+      // Обычная логика для всех остальных полей
+      setTempFilters(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // Функция для применения временных фильтров
+  const applyFilters = () => {
+    // Устанавливаем фильтры из временных фильтров
+    setFilters(tempFilters);
+    // Сбрасываем страницу на первую
+    setCurrentPage(1);
+    // Загружаем данные с новыми фильтрами
+    loadTransactions();
   };
 
   // Функция для сброса фильтров
   const resetFilters = () => {
-    setFilters({
+    const emptyFilters = {
       fromDate: '',
       toDate: '',
       type: '',
@@ -154,8 +283,17 @@ const TransactionsDashboard = () => {
       project: '',
       currency: '',
       compareType: '',
-    });
-    setPageSize(10);
+      mismatchStatus: '',
+      mismatch_confirmed: null,
+      paymentProcessors: [],
+      paymentProcessorIds: [],
+    };
+    
+    // Сбрасываем и временные, и активные фильтры
+    setTempFilters(emptyFilters);
+    setFilters(emptyFilters);
+    
+    setPageSize(100);
     setCurrentPage(1);
   };
 
@@ -218,6 +356,25 @@ const TransactionsDashboard = () => {
     loadTransactions();
   }, [loadTransactions]);
 
+  // Load payment processors for filters and for table display
+  useEffect(() => {
+    const loadPaymentProcessors = async () => {
+      try {
+        const response = await fetch('/api/v1/payments/?connected_history=true');
+        if (response.ok) {
+          const data = await response.json();
+          // Check if data has items property (in case API returns array in items)
+          const processors = data.items || data;
+          setPaymentProcessors(processors);
+        }
+      } catch (error) {
+        console.error('Error loading payment processors:', error);
+      }
+    };
+
+    loadPaymentProcessors();
+  }, []);
+
   return (
     <div className="page-container">
       {/* Dashboard Header */}
@@ -232,6 +389,9 @@ const TransactionsDashboard = () => {
           <div className="nav-container">
             <a href="/" className="nav-link active">
               Transactions
+            </a>
+            <a href="/reports" className="nav-link">
+              Reports
             </a>
             <a href="/jobs" className="nav-link">
               Jobs
@@ -259,10 +419,10 @@ const TransactionsDashboard = () => {
       <div className="container main-content">
         {/* Filters Section */}
         <FiltersSection
-          filters={filters}
+          filters={tempFilters}
           onFilterChange={handleFilterChange}
           onReset={resetFilters}
-          onApply={loadTransactions}
+          onApply={applyFilters}
           pageSize={pageSize}
           onPageSizeChange={handlePageSizeChange}
         />
@@ -279,6 +439,7 @@ const TransactionsDashboard = () => {
           isLoading={isLoading}
           isEmpty={transactions.length === 0 && !isLoading}
           onShowExternalId={handleShowExternalId}
+          payments={paymentProcessors}
         />
 
         {/* Pagination */}

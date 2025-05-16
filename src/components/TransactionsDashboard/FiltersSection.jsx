@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReportModal from './ReportModal';
 import './TransactionsDashboard.css';
 
 const FiltersSection = ({
@@ -13,6 +14,8 @@ const FiltersSection = ({
   const [statusOptions, setStatusOptions] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
   const [currencyOptions, setCurrencyOptions] = useState([]);
+  const [paymentProcessors, setPaymentProcessors] = useState([]);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Загрузка опций для фильтров
   const loadFilterOptions = async () => {
@@ -28,6 +31,61 @@ const FiltersSection = ({
       setCurrencyOptions(data.currencies || []);
     } catch (error) {
       console.error('Error loading filter options:', error);
+    }
+  };
+
+  // Загрузка платежных процессоров
+  const loadPaymentProcessors = async () => {
+    try {
+      const response = await fetch('/api/v1/payments/?connected_history=true');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      
+      if (!data || !data.items || !Array.isArray(data.items)) {
+        throw new Error('Invalid response format for payment processors');
+      }
+      
+      setPaymentProcessors(data.items || []);
+    } catch (error) {
+      console.error('Error loading payment processors:', error);
+    }
+  };
+
+  // Функция для обработки изменения чекбокса платежного процессора
+  const handlePaymentProcessorChange = (processorId, processorName) => {
+    const currentProcessorIds = filters.paymentProcessorIds || [];
+    const currentProcessorNames = filters.paymentProcessors || [];
+    let newProcessorIds;
+    let newProcessorNames;
+    
+    if (currentProcessorIds.includes(processorId)) {
+      // Удаляем из списка, если уже выбран
+      newProcessorIds = currentProcessorIds.filter(id => id !== processorId);
+      newProcessorNames = currentProcessorNames.filter(name => name !== processorName);
+    } else {
+      // Добавляем в список, если еще не выбран
+      newProcessorIds = [...currentProcessorIds, processorId];
+      newProcessorNames = [...currentProcessorNames, processorName];
+    }
+    
+    onFilterChange('paymentProcessorIds', newProcessorIds);
+    onFilterChange('paymentProcessors', newProcessorNames);
+  };
+
+  // Функция для выбора/отмены всех процессоров
+  const toggleAllPaymentProcessors = () => {
+    const currentProcessorIds = filters.paymentProcessorIds || [];
+    
+    if (currentProcessorIds.length === paymentProcessors.length) {
+      // Если все выбраны, очищаем выбор
+      onFilterChange('paymentProcessorIds', []);
+      onFilterChange('paymentProcessors', []);
+    } else {
+      // Иначе выбираем все
+      onFilterChange('paymentProcessorIds', paymentProcessors.map(p => p.id));
+      onFilterChange('paymentProcessors', paymentProcessors.map(p => p.name));
     }
   };
 
@@ -72,9 +130,15 @@ const FiltersSection = ({
     onFilterChange('toDate', toDate);
   };
 
+  // Добавляем обработчик для открытия и закрытия модального окна генерации отчета
+  const toggleReportModal = () => {
+    setShowReportModal(!showReportModal);
+  };
+
   // Загрузка опций фильтров при монтировании компонента
   useEffect(() => {
     loadFilterOptions();
+    loadPaymentProcessors();
   }, []);
 
   return (
@@ -120,6 +184,137 @@ const FiltersSection = ({
         </button>
       </div>
 
+      {/* Активные фильтры */}
+      <div className="active-filters-container">
+        {filters.fromDate && (
+          <div className="active-filter">
+            <span>From: {filters.fromDate}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('fromDate', '')}
+              aria-label="Remove from date filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {filters.toDate && (
+          <div className="active-filter">
+            <span>To: {filters.toDate}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('toDate', '')}
+              aria-label="Remove to date filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {filters.compareType && (
+          <div className="active-filter">
+            <span>Comparison: {filters.compareType.replace(/_/g, ' ')}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('compareType', '')}
+              aria-label="Remove comparison type filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {filters.mismatchStatus && (
+          <div className="active-filter">
+            <span>Mismatch Status: {filters.mismatchStatus}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('mismatchStatus', '')}
+              aria-label="Remove mismatch status filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {filters.status && (
+          <div className="active-filter">
+            <span>Status: {filters.status}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('status', '')}
+              aria-label="Remove status filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {filters.project && (
+          <div className="active-filter">
+            <span>Project: {filters.project}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('project', '')}
+              aria-label="Remove project filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {filters.currency && (
+          <div className="active-filter">
+            <span>Currency: {filters.currency.toUpperCase()}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('currency', '')}
+              aria-label="Remove currency filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {filters.paymentProcessors && filters.paymentProcessors.length > 0 && (
+          <div className="active-filter">
+            <span>Payment Processors: {filters.paymentProcessors.join(', ')}</span>
+            <button 
+              className="remove-filter" 
+              onClick={() => onFilterChange('paymentProcessors', [])}
+              aria-label="Remove payment processors filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        
+        {(filters.fromDate || filters.toDate || filters.compareType || 
+          filters.mismatchStatus || filters.status || filters.project || 
+          filters.currency || (filters.paymentProcessors && filters.paymentProcessors.length > 0)) && (
+          <button className="clear-all-filters" onClick={onReset}>
+            Clear All Filters
+          </button>
+        )}
+      </div>
+
       {showFilters && (
         <div className="load-compare-content">
           <div className="load-compare-section-title">
@@ -144,7 +339,7 @@ const FiltersSection = ({
 
           <div className="load-compare-section-description">
             <p>
-              Filter transactions by date range, transaction type, status, and
+              Filter transactions by date range, status, and
               other criteria.
             </p>
           </div>
@@ -157,49 +352,23 @@ const FiltersSection = ({
                 <div className="date-input-group">
                   <label>From</label>
                   <input
-                    type="text"
-                    placeholder="ДД.ММ.ГГГГ"
-                    value={
-                      filters.fromDate
-                        ? filters.fromDate.split('-').reverse().join('.')
-                        : ''
-                    }
+                    type="date"
+                    value={filters.fromDate || ''}
                     onChange={e => {
-                      // Преобразование формата ДД.ММ.ГГГГ в ГГГГ-ММ-ДД для API
-                      const parts = e.target.value.split('.');
-                      if (parts.length === 3) {
-                        onFilterChange(
-                          'fromDate',
-                          `${parts[2]}-${parts[1]}-${parts[0]}`
-                        );
-                      } else {
                         onFilterChange('fromDate', e.target.value);
-                      }
                     }}
+                    className="date-calendar"
                   />
                 </div>
                 <div className="date-input-group">
                   <label>To</label>
                   <input
-                    type="text"
-                    placeholder="ДД.ММ.ГГГГ"
-                    value={
-                      filters.toDate
-                        ? filters.toDate.split('-').reverse().join('.')
-                        : ''
-                    }
+                    type="date"
+                    value={filters.toDate || ''}
                     onChange={e => {
-                      // Преобразование формата ДД.ММ.ГГГГ в ГГГГ-ММ-ДД для API
-                      const parts = e.target.value.split('.');
-                      if (parts.length === 3) {
-                        onFilterChange(
-                          'toDate',
-                          `${parts[2]}-${parts[1]}-${parts[0]}`
-                        );
-                      } else {
                         onFilterChange('toDate', e.target.value);
-                      }
                     }}
+                    className="date-calendar"
                   />
                 </div>
               </div>
@@ -237,20 +406,8 @@ const FiltersSection = ({
               </div>
             </div>
 
-            {/* Transaction Type */}
+            {/* Comparison Type & Mismatch Status */}
             <div className="filter-group">
-              <label>Transaction Type</label>
-              <div className="select-wrapper">
-                <select
-                  value={filters.type}
-                  onChange={e => onFilterChange('type', e.target.value)}
-                >
-                  <option value="">All Types</option>
-                  <option value="deposit">Deposit</option>
-                  <option value="withdrawal">Withdrawal</option>
-                </select>
-              </div>
-
               <label>Comparison Type</label>
               <div className="select-wrapper">
                 <select
@@ -262,6 +419,31 @@ const FiltersSection = ({
                   <option value="fundist_match">Fundist Only</option>
                   <option value="payment_match">Payment Only</option>
                   <option value="amount_mismatch">Amount Mismatch</option>
+                </select>
+              </div>
+
+              <label>Mismatch Status</label>
+              <div className="select-wrapper">
+                <select
+                  value={filters.mismatchStatus}
+                  onChange={e => {
+                    const value = e.target.value;
+                    onFilterChange('mismatchStatus', value);
+                    
+                    // Добавляем логику для установки параметра mismatch_confirmed
+                    if (value === 'confirmed') {
+                      onFilterChange('mismatch_confirmed', true);
+                    } else if (value === 'unconfirmed') {
+                      onFilterChange('mismatch_confirmed', false);
+                    } else {
+                      // Если выбрано "All Status", удаляем параметр mismatch_confirmed
+                      onFilterChange('mismatch_confirmed', null);
+                    }
+                  }}
+                >
+                  <option value="">All Status</option>
+                  <option value="confirmed">Confirmed Mismatches</option>
+                  <option value="unconfirmed">Unconfirmed Mismatches</option>
                 </select>
               </div>
             </div>
@@ -316,23 +498,74 @@ const FiltersSection = ({
                 </select>
               </div>
 
+              {/* Payment Processors с множественным выбором */}
+              <div className="payment-processors-filter">
+                <div className="payment-processors-header">
+                  <label>Payment Processors</label>
+                  {paymentProcessors.length > 0 && (
+                    <button 
+                      type="button" 
+                      onClick={toggleAllPaymentProcessors} 
+                      className="select-all-button"
+                    >
+                      {filters.paymentProcessors && filters.paymentProcessors.length === paymentProcessors.length 
+                        ? 'Deselect All' 
+                        : 'Select All'}
+                    </button>
+                  )}
+                </div>
+                
+                <div className="payment-processors-list">
+                  {paymentProcessors.length === 0 ? (
+                    <div className="no-processors">No payment processors available</div>
+                  ) : (
+                    <div className="payment-processors-grid">
+                      {paymentProcessors.map((processor, index) => (
+                        <div key={index} className="payment-processor-item">
+                          <input
+                            type="checkbox"
+                            id={`filter_payment_${processor.name}`}
+                            value={processor.name}
+                            checked={filters.paymentProcessorIds && filters.paymentProcessorIds.includes(processor.id)}
+                            onChange={() => handlePaymentProcessorChange(processor.id, processor.name)}
+                            data-id={processor.id}
+                          />
+                          <label htmlFor={`filter_payment_${processor.name}`}>{processor.name}</label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <label>Items per page</label>
               <div className="select-wrapper items-per-page-select">
                 <select
                   value={pageSize}
                   onChange={e => onPageSizeChange(e.target.value)}
                 >
-                  <option value="10">10 items per page</option>
-                  <option value="25">25 items per page</option>
-                  <option value="50">50 items per page</option>
                   <option value="100">100 items per page</option>
+                  <option value="200">200 items per page</option>
+                  <option value="300">300 items per page</option>
+                  <option value="400">400 items per page</option>
+                  <option value="500">500 items per page</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <div className="load-compare-submit">
-            <button onClick={onApply} className="load-data-button">
+          <div className="filters-buttons-container">
+            <button 
+              onClick={toggleReportModal} 
+              className="report-button"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="report-button-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Generate Report
+            </button>
+            
+            <button onClick={onApply} className="load-data-button button-enabled">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="button-icon"
@@ -352,6 +585,13 @@ const FiltersSection = ({
           </div>
         </div>
       )}
+      
+      {/* Модальное окно для генерации отчета */}
+      <ReportModal 
+        isOpen={showReportModal} 
+        onClose={toggleReportModal} 
+        filters={filters} 
+      />
     </div>
   );
 };

@@ -124,6 +124,9 @@ const Jobs = () => {
               <a href="/dashboard" className="nav-link">
                 Transactions
               </a>
+              <a href="/reports" className="nav-link">
+                Reports
+              </a>
               <a href="/jobs" className="nav-link active">
                 Jobs
               </a>
